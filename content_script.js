@@ -4,6 +4,7 @@
 let summaryData = null;
 let currentPointIndex = 0;
 let isPlaying = false;
+let isPinned = false; // Tracks if the player is "pinned" open by a click
 let pointIntervalId = null;
 let wordTimeoutId = null;
 let currentPointTime = 0;
@@ -19,6 +20,7 @@ let headerTitleDisplay;
 let closeBtn;
 
 // --- Readability & Page Processing ---
+// This returns the article content using Readability.js, which should be included in the page.
 function extractArticleContent() {
   // Ensure Readability is loaded (it should be, as it's listed before this script in executeScript)
   if (typeof Readability === "undefined") {
@@ -83,29 +85,30 @@ function createPlayerUI() {
 }
 
 function assignPlayerElementVars() {
-    headerTitleDisplay = playerContainer.querySelector('.rsp-header-title');
+    headerTitleDisplay = playerContainer.querySelector('.rsp-header-title'); // not needed
     closeBtn = playerContainer.querySelector('.rsp-close-btn');
     currentPointTextDisplay = playerContainer.querySelector('.rsp-current-point-text');
     playPauseBtn = document.getElementById('rsp-play-pause-btn');
     prevBtn = document.getElementById('rsp-prev-btn');
     nextBtn = document.getElementById('rsp-next-btn');
-    const timeDisplaySpan = playerContainer.querySelector('.rsp-time');
+    const timeDisplaySpan = playerContainer.querySelector('.rsp-time'); // need to change to countdown rather than total time
     // These might not exist if summaryData isn't loaded, so check:
     if (timeDisplaySpan) currentTimeDisplay = timeDisplaySpan; // Will be updated dynamically
     if (timeDisplaySpan) totalTimeDisplay = timeDisplaySpan; // Will be updated dynamically
     pointIndicatorDisplay = playerContainer.querySelector('.rsp-point-indicator');
-    autoScrollCheckbox = document.getElementById('rsp-autoscroll-cb');
+    autoScrollCheckbox = document.getElementById('rsp-autoscroll-cb'); // not needed
 }
 
 
 function addEventListeners() {
-  playPauseBtn.addEventListener('click', togglePlayPause);
-  prevBtn.addEventListener('click', prevPoint);
+  playPauseBtn.addEventListener('click', togglePlayPause); // need to change togglePlayPause for design use ⏸
+  prevBtn.addEventListener('click', prevPoint); 
   nextBtn.addEventListener('click', nextPoint);
-  autoScrollCheckbox.addEventListener('change', (e) => {
+  autoScrollCheckbox.addEventListener('change', (e) => { // can remove this and autoscroll for the time being
     autoScrollEnabled = e.target.checked;
-    saveSettings();
+    saveSettings(); // no need to worry about setting persistence
   });
+
   closeBtn.addEventListener('click', () => {
     if (playerContainer) {
         pausePlayback(); // Stop audio if playing
@@ -113,13 +116,14 @@ function addEventListeners() {
     }
   });
 
-  playerContainer.addEventListener('mouseenter', () => {
+  playerContainer.addEventListener('mouseenter', () => { // need to rewrite this and mouse leave, MVP can do without expanded / minimized versions
     playerContainer.classList.add('expanded');
     currentPointTextDisplay.classList.add('expanded-text');
     if (summaryData && summaryData.points.length > 0) {
         renderCurrentPointTextWithWordSpans(); // Show word spans on hover
     }
   });
+
   playerContainer.addEventListener('mouseleave', () => {
     playerContainer.classList.remove('expanded');
     currentPointTextDisplay.classList.remove('expanded-text');
@@ -131,7 +135,7 @@ function addEventListeners() {
 }
 
 // --- Playback Logic ---
-function togglePlayPause() {
+function togglePlayPause() { // update the playPauseBtn to reflect new UI
   if (!summaryData || summaryData.points.length === 0) return;
   isPlaying = !isPlaying;
   if (isPlaying) {
@@ -153,7 +157,7 @@ function playCurrentPoint() {
   playPauseBtn.textContent = 'Pause ❚❚';
   playPauseBtn.title = 'Pause';
 
-  // Simulate audio playback with word highlighting
+  // Simulate audio playback with word highlighting - can implment real audio matching later
   clearTimeout(wordTimeoutId);
   clearInterval(pointIntervalId); // Clear any existing point interval
 
@@ -252,7 +256,7 @@ function loadPointIntoPlayer(index, shouldContinuePlaying = false) {
   prevBtn.disabled = index === 0;
   nextBtn.disabled = index === summaryData.points.length - 1;
 
-  highlightSectionInPage(point.originalTextRef);
+  highlightSectionInPage(point.originalTextRef); // don't need this initially
 
   if (shouldContinuePlaying) {
     playCurrentPoint();
@@ -310,14 +314,14 @@ function updatePlayerDisplay() {
   if (summaryData.points.length === 0) {
     currentPointTextDisplay.textContent = "No summary points available for this article.";
     pointIndicatorDisplay.textContent = "0/0";
-    currentTimeDisplay.textContent = "0:00 / 0:00";
+    currentTimeDisplay.textContent = "0:00";
     playPauseBtn.disabled = true;
     prevBtn.disabled = true;
     nextBtn.disabled = true;
     return;
   }
   
-  playPauseBtn.disabled = false; // Enable if there are points
+  playPauseBtn.disabled = false; // Enable if there are points - don't need the title displays
   headerTitleDisplay.textContent = summaryData.title ? `Summary: ${summaryData.title.substring(0,30)}...` : "Article Summary";
   headerTitleDisplay.title = summaryData.title || "Article Summary";
 
@@ -338,7 +342,7 @@ function updatePlayerTimeDisplay() {
   currentTimeDisplay.textContent = `${currentTimeFormatted} / ${totalTimeFormatted}`;
 }
 
-// --- On-Page Highlighting & Scrolling ---
+// --- On-Page Highlighting & Scrolling --- // Can be removed for MVP
 let currentHighlightedElement = null;
 
 function findElementByTextContent(textToFind) {
