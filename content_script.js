@@ -5,11 +5,12 @@ let summaryData = null;
 let currentPointIndex = 0;
 let isPlaying = false;
 let isPinned = false; // Tracks if the player is "pinned" open by a click
-let pointIntervalId = null;
+let pointIntervalId = null; 
 let wordTimeoutId = null;
 let currentPointTime = 0;
 let autoScrollEnabled = false;
 let playerContainer = null; // Holds the DOM element for the player
+let collapseTimeout; // Timer for delayed collapse on mouse leave
 
 // --- DOM Elements (will be populated when UI is built) ---
 let playPauseBtn, prevBtn, nextBtn;
