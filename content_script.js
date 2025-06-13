@@ -25,7 +25,7 @@ let closeBtn;
 function extractArticleContent() {
   // Ensure Readability is loaded (it should be, as it's listed before this script in executeScript)
   if (typeof Readability === "undefined") {
-    console.error("Readability.js not loaded!");
+    console.error("Readability.js is not loaded!");
     alert("Error: Readability library not found. Cannot summarize.");
     return null;
   }
