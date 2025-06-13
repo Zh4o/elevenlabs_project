@@ -1,2 +1,3 @@
-content_script_stage.js
-player_stage.css
+extension/content_script_stage.js
+extension/player_stage.css
+backend/.env
